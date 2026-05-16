@@ -12,9 +12,8 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": [ "./src/*" ],
+      "@test/*": [ "./test/*" ]
     },
 
     "strict": true,

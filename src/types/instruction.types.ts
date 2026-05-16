@@ -29,7 +29,7 @@ export type InstructionEncoding = {
     readonly funct?         : string;
     readonly shamt?         : string;
     readonly rt?            : string;
-    readonly version        : ReadonlyArray<MipsVersion | 'common'>;
+    readonly version        : string;
     readonly args           : ReadonlyArray<InstructionArg>;
 }
 
