@@ -1,0 +1,1 @@
+export type MipsVersion = 'legacy' | 'r6';
