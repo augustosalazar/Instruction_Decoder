@@ -20,14 +20,17 @@ export type DecodedInstruction = {
 }
 
 export type InstructionEncoding = {
-    readonly mnemonic   : Mnemonic;
-    readonly type       : InstructionType;
-    readonly opcode     : string;
-    readonly funct?     : string;
-    readonly shamt?     : string;
-    readonly rt?        : string;
-    readonly version    : ReadonlyArray<MipsVersion | 'common'>;
-    readonly args       : ReadonlyArray<InstructionArg>;
+    readonly mnemonic       : Mnemonic;
+    readonly description    : string;
+    readonly example?       : string;
+    readonly template?      : string;
+    readonly type           : InstructionType;
+    readonly opcode         : string;
+    readonly funct?         : string;
+    readonly shamt?         : string;
+    readonly rt?            : string;
+    readonly version        : ReadonlyArray<MipsVersion | 'common'>;
+    readonly args           : ReadonlyArray<InstructionArg>;
 }
 
 export type InstructionArg = 

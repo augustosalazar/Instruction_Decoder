@@ -38,5 +38,8 @@ export const REGISTER_BY_NAME =
     // Invertir de { clave: valor } a { valor: clave }
     Object.fromEntries( Object.entries(REGISTER_BY_BITS).map(([bits, name]) => [name, bits]))
 
+export const REG_ZERO = '00000' as const;
+export const REG_RA   = '11111' as const;
+
 export type RegisterBits = keyof typeof REGISTER_BY_BITS
 export type RegisterName = typeof REGISTER_BY_BITS[RegisterBits];
