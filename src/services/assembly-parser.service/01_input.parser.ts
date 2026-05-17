@@ -27,8 +27,9 @@ type LineParseResult =
   | { ok: true;  line: ParsedLine; label: string | null }
   | { ok: false; error: string                          }
   | { ok: 'skip'                                        };
- 
-function parseLine ( raw: string, lineNumber: number ) : LineParseResult {
+  
+
+export function parseLine ( raw: string, lineNumber: number ) : LineParseResult {
     // Extraer lo que no es comentario
     const clean = stripComment(raw);
 

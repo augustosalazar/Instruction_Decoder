@@ -1,3 +1,5 @@
+import { BRANCH_MNEMONICS, JUMP_MNEMONICS } from "@/constants/set.constants";
+
 export type RTypeMnemonic =
   | 'add' | 'addu' | 'sub' | 'subu'
   | 'and' | 'or'   | 'xor' | 'nor'
@@ -11,12 +13,8 @@ export type ITypeMnemonic =
 export type MemoryMnemonic =
   | 'lw' | 'sw'
 
-export type BranchMnemonic =
-  | 'beq' | 'bne' | 'blez' | 'bgtz'
-  | 'bltz'| 'bgez'| 'bal'
-
-export type JTypeMnemonic =
-  | 'j' | 'jal' | 'bc' | 'balc'
+export type BranchMnemonic = typeof BRANCH_MNEMONICS[number];
+export type JTypeMnemonic  = typeof JUMP_MNEMONICS[number];
 
 export type Mnemonic =
   | RTypeMnemonic

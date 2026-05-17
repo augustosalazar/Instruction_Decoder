@@ -1,4 +1,5 @@
 import { LabelInfo, ValidatedOperand } from "@/types/parser.types";
+import { BRANCH_MNEMONICS, JUMP_MNEMONICS } from "@/constants/set.constants";
 
 type Resolution = 
     | { ok: true; value: number }
@@ -34,7 +35,7 @@ type LabelResolution =
     | { ok: true ;  operands: ReadonlyArray<ValidatedOperand> }
     | { ok: false;  error: string }
 
-function resolveLabels ( 
+export function resolveLabels ( 
     mnemonic          : string,
     operands          : ReadonlyArray<ValidatedOperand>,
     currentAddress    : number,
@@ -42,8 +43,8 @@ function resolveLabels (
     lineNumber        : number,
 ) : LabelResolution {
 
-    const isBranch = BRANCH_MNEMONICS.has(mnemonic);
-    const isJump   = JUMP_MNEMONICS.has(mnemonic);
+    const isBranch = BRANCH_MNEMONICS.includes(mnemonic);
+    const isJump   = JUMP_MNEMONICS.includes(mnemonic);
 
     if ( !isBranch && !isJump ) return { ok:true, operands };
 
@@ -64,7 +65,7 @@ function resolveLabels (
             continue;
         }
 
-        const info = labelMap.get(op.name);
+        const info = labelMap.get(op.name.toLowerCase());
         if (!info) return { ok: false, error: `Línea ${lineNumber}: etiqueta no definida '${op.name}'.` }; // assembly-parser.service.ts[:360]
 
         const result = isBranch
