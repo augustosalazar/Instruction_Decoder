@@ -40,8 +40,17 @@ export const OPCODES = {
     BNEZC             : '111110',
 } as const;
 
-export type Opcode    = typeof OPCODES[keyof typeof OPCODES];
 
-/* 
-    TODO: Es necesario agregar soporte a las operaciones legacy (REGIMM) 
-*/
+export const REGIMM = {
+    BLTZ:    "00000",
+    BGEZ:    "00001",
+    
+    BLTZAL:  "10000",
+    BGEZAL:  "10001",
+    
+    NAL:     "10000",
+    BAL:     "10001",
+} as const;
+
+export type Opcode    = typeof OPCODES[keyof typeof OPCODES];
+export type Regimm = typeof REGIMM[keyof typeof REGIMM];
