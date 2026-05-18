@@ -1,71 +1,62 @@
-import { ENCODING_BY_MNEMONIC } from "@/constants/instructions.constants";
 import { REG_ZERO, RegisterBits } from "@/constants/registers.constants";
 import { I_TYPE_MNEMONICS } from "@/constants/set.constants";
-import { HandlerError, InstructionDescription, InstructionHandler } from "@/types/handler.types";
+import { InstructionHandler } from "@/types/handler.types";
 import { DecodedInstruction } from "@/types/instruction.types";
 import { ImmediateOperand, RegisterOperand } from "@/types/operand.types";
 import { MipsVersion } from "@/types/version.types";
 import { constToBits, sliceBits } from "@/utils/bit.utils";
+import { buildInstructionDescriptions, findEncodingByOpcode, getEncoding } from "@/utils/handler.utils";
 import { regBitsToName, regNameToBits } from "@/utils/register.utils";
 
-const instructions: ReadonlyArray<InstructionDescription> =
-    Object.values(ENCODING_BY_MNEMONIC)
-        .filter(e => I_TYPE_MNEMONICS.includes(e.mnemonic))
-        .map(e => ({ mnemonic: e.mnemonic, opcode: e.opcode }));
+const HANDLER = "I-TYPE-HANDLER"
 
-export const iTypeHandler: InstructionHandler = {
-    instructions,
-    encode,
-    decode
-}
+const isITypeEncoding = (e: { mnemonic: string }) => I_TYPE_MNEMONICS.includes(e.mnemonic);
 
-function encode(instruction: DecodedInstruction): string {
-    const { mnemonic, operands } = instruction;
-    const encoded = ENCODING_BY_MNEMONIC[mnemonic];
+export const iTypeHandler = {
 
-    if (!encoded)
-        throw new HandlerError({ type: 'UNKNOWN_MNEMONIC', message: `[I-type-handler] Encoding no encontrado para ${mnemonic}` })
+    instructions: buildInstructionDescriptions(isITypeEncoding),
+    
+    encode(instruction: DecodedInstruction): string {
+        const encoded = getEncoding(instruction.mnemonic, HANDLER);
+        const { mnemonic, operands } = instruction;
 
-    if (mnemonic === 'lui') {
+        if (mnemonic === 'lui') {
+            const rt = regNameToBits((operands[0] as RegisterOperand).name);
+            const immediate = constToBits((operands[1] as ImmediateOperand).value, 16);
+            return encoded.opcode + REG_ZERO + rt + immediate;
+        }
+
         const rt = regNameToBits((operands[0] as RegisterOperand).name);
-        const immediate = constToBits((operands[1] as ImmediateOperand).value, 16);
-        return encoded.opcode + REG_ZERO + rt + immediate;
-    }
+        const rs = regNameToBits((operands[1] as RegisterOperand).name);
+        const imm = constToBits((operands[2] as ImmediateOperand).value, 16);
+        return encoded.opcode + rs + rt + imm;
+    },
+    
+    decode(bits32: string, version: MipsVersion): DecodedInstruction {
+        const { opcode, rs, rt, imm16 } = sliceBits(bits32);
 
-    const rt = regNameToBits((operands[0] as RegisterOperand).name);
-    const rs = regNameToBits((operands[1] as RegisterOperand).name);
-    const imm = constToBits((operands[2] as ImmediateOperand).value, 16);
-    return encoded.opcode + rs + rt + imm;
-}
+        const encoded = findEncodingByOpcode(opcode, isITypeEncoding, HANDLER);
 
-function decode(bits32: string, version: MipsVersion): DecodedInstruction {
-    const { opcode, rs, rt, imm16 } = sliceBits(bits32);
+        // del legacy, LUI es AUI con rs=00000    translator.service.ts[:862]
+        const mnemonic = (encoded.mnemonic === 'aui' && rs === REG_ZERO) ? 'lui' : encoded.mnemonic;
 
-    const encoded = Object.values(ENCODING_BY_MNEMONIC).find(e =>
-        e.opcode === opcode && I_TYPE_MNEMONICS.includes(e.mnemonic)
-    );
+        if (mnemonic === 'lui')
+            return {
+                mnemonic: 'lui',
+                operands: [
+                    { kind: 'register', name: regBitsToName(rt as RegisterBits) },
+                    { kind: 'immediate', value: parseInt(imm16, 2) },
+                ],
+            };
 
-    if (!encoded ) 
-        throw new HandlerError({ type:'UNKNOWN_OPCODE', message:`[I-type-handler] opcode desconocido ${opcode}`})
-;
-    // del legacy, LUI es AUI con rs=00000    translator.service.ts[:862]
-    const mnemonic = (encoded.mnemonic === 'aui' && rs === REG_ZERO) ? 'lui' : encoded.mnemonic;
-
-    if (mnemonic === 'lui')
         return {
-            mnemonic: 'lui',
+            mnemonic,
             operands: [
                 { kind: 'register', name: regBitsToName(rt as RegisterBits) },
+                { kind: 'register', name: regBitsToName(rs as RegisterBits) },
                 { kind: 'immediate', value: parseInt(imm16, 2) },
             ],
         };
+    },
 
-    return {
-        mnemonic,
-        operands: [
-            { kind: 'register', name: regBitsToName(rt as RegisterBits) },
-            { kind: 'register', name: regBitsToName(rs as RegisterBits) },
-            { kind: 'immediate', value: parseInt(imm16, 2) },
-        ],
-    };
-};
+} satisfies InstructionHandler
