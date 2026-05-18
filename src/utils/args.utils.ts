@@ -32,7 +32,7 @@ const INSTRUCTION_ARG_TO_OPERAND_EXPECTATION: Readonly<Record<InstructionArg, Op
     rs                : 'register',
     rt                : 'register',
     rd                : 'register',
-    imm16             : 'immediate16u',
+    imm16             : 'immediate16s',
     imm26             : 'label',
     imm21             : 'label',
     offset16          : 'label',

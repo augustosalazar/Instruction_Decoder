@@ -28,6 +28,11 @@ function reorder(mnemonic: string,operands: ReadonlyArray<ValidatedOperand>): Re
     return order.map(i => operands[i]!);
 }
 
+/* legacy
 export function formatInstruction(mnemonic: string, operands: ReadonlyArray<ValidatedOperand>): string {
     return [mnemonic, ...reorder(mnemonic, operands).map(formatOperand)].join(' ').trim();
+} */
+
+export function formatInstruction(mnemonic: string, operands: ReadonlyArray<ValidatedOperand>): string {
+    return [mnemonic, ...operands.map(formatOperand)].join(' ').trim();
 }
