@@ -4,6 +4,7 @@ import { parseInstructions } from '../src/services/instruction.parser.service'
 import { encodeInstruction, decodeInstruction } from '../src/services/handler.registry.service';
 import { regNameToBits } from '../src/utils/register.utils'
 import { constToBits } from '../src/utils/bit.utils';
+import { formatDecodedInstruction } from '../src/utils/format.utils';
 
 const assembleToHexes = (program: string, version: 'r6' = 'r6') => {
     const { instructions, errors } = parseAssembly(program);
@@ -16,6 +17,35 @@ const assembleToHexes = (program: string, version: 'r6' = 'r6') => {
 };
 
 describe('flujo completo assembly → hex → assembly', () => {
+    it('formatDecodedInstruction', () => {
+        const result = decodeInstruction('0x012A4020', 'r6');
+        expect(formatDecodedInstruction(result)).toBe('add $t0 $t1 $t2');
+    });
+
+    it('round-trip completo', () => {
+        const inputs = [
+            'add $t0, $t1, $t2',
+            'lw $s0, 4($sp)',
+            'addiu $t1, $zero, 42',
+        ];
+
+        for (const input of inputs) {
+            const { instructions } = parseAssembly(input);
+            const decoded          = parseInstructions(instructions);
+            const hex              = encodeInstruction(decoded[0], 'r6');
+            const back             = decodeInstruction(hex, 'r6');
+            const formatted        = formatDecodedInstruction(back);
+
+            console.log(`${input.padEnd(25)} → ${hex} → ${formatted}`);
+            expect(formatted).toContain(decoded[0].mnemonic);
+        }
+    });
+
+    it('debug decode add', () => {
+        const result = decodeInstruction('0x012A4020', 'r6');
+        console.log(JSON.stringify(result, null, 2));
+    });
+
     it('debug lw bits', () => {
         const rt = regNameToBits('s0');
         const rs = regNameToBits('sp');
