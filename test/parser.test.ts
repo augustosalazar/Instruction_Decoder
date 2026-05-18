@@ -4,6 +4,16 @@ import { describe, it, expect } from 'vitest';
 import { parseAssembly } from '../src/services/assembly-parser.service/assembly-parser.service';
 
 describe('AssemblyParser', () => {
+    it('muestra formato de salida', () => {
+        const result = parseAssembly(`
+        add   $t0, $t1, $t2
+        lw    $s0, 4($sp)
+        addiu $t1, $zero, 42
+        beq   $t0, $zero, fin
+        fin: jr $ra
+    `);
+        console.log(result.instructions);
+    });
 
     it('parsea una instrucción simple', () => {
         const result = parseAssembly('add $t0, $t1, $t2');
