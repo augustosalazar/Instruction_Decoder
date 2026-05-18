@@ -37,7 +37,6 @@ export type InstructionArg =
     | 'rs'       | 'rt'     | 'rd'      // Para registros
     | 'imm16'    | 'imm26'  | 'imm21'   // Tamaños del immediate
     | 'offset16' | 'offsetFromBase'     // Tipo de offset
-    | 'shamt'
-    | 'sa';
+    | 'shamt'    | 'sa'     | 'code';
 
 

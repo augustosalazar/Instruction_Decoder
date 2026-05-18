@@ -25,6 +25,7 @@ const RAW_ARG_TO_CANONICAL_ARG: Readonly<Record<string, InstructionArg>> = {
     imm26           : "imm26",
 
     imm21           : "imm21",
+    "code"          : "code",
 };
 
 const INSTRUCTION_ARG_TO_OPERAND_EXPECTATION: Readonly<Record<InstructionArg, OperandExpectation>> = {
@@ -37,7 +38,8 @@ const INSTRUCTION_ARG_TO_OPERAND_EXPECTATION: Readonly<Record<InstructionArg, Op
     offset16          : 'label',
     offsetFromBase    : 'memory',
     shamt             : 'shamt5u',
-    sa                : 'shamt5u'
+    sa                : 'shamt5u',
+    code              : 'immediate16u',
 }
 
 function normalizeInstructionArg(rawArg: string): InstructionArg {

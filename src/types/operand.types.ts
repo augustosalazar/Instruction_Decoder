@@ -1,6 +1,8 @@
+import { RegisterName } from "@/constants/registers.constants";
+
 export type RegisterOperand = {
     readonly kind   : 'register';
-    readonly bits   : string;
+    readonly name   : RegisterName;
 }
 
 export type ImmediateOperand = {
