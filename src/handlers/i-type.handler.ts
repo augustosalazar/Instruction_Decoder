@@ -46,10 +46,10 @@ function decode(bits32: string, version: MipsVersion): DecodedInstruction {
     );
 
     if (!encoded ) 
-        throw new HandlerError({ type:'UNKNOWN_MNEMONIC', message:`[I-type-handler] opcode desconocido ${opcode}`})
+        throw new HandlerError({ type:'UNKNOWN_OPCODE', message:`[I-type-handler] opcode desconocido ${opcode}`})
 ;
-    // lui es AUI con rs=00000
-    const mnemonic = (encoded .mnemonic === 'aui' && rs === REG_ZERO) ? 'lui' : encoded .mnemonic;
+    // del legacy, LUI es AUI con rs=00000    translator.service.ts[:862]
+    const mnemonic = (encoded.mnemonic === 'aui' && rs === REG_ZERO) ? 'lui' : encoded.mnemonic;
 
     if (mnemonic === 'lui')
         return {
