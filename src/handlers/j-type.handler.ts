@@ -7,12 +7,12 @@ import { constToBits, sliceBits } from "@/utils/bit.utils";
 import { buildInstructionDescriptions, findEncodingByOpcode, getEncoding } from "@/utils/handler.utils";
 
 const HANDLER = "JUMP-HANDLER"
-const isJumpEncoding = (e: { mnemonic: string }) => J_TYPE_MNEMONICS.includes(e.mnemonic);
+const isJTypeEncoding = (e: { mnemonic: string }) => J_TYPE_MNEMONICS.includes(e.mnemonic);
 
 
-export const memoryHandler = {
+export const jTypeHandler = {
 
-    instructions: buildInstructionDescriptions(isJumpEncoding),
+    instructions: buildInstructionDescriptions(isJTypeEncoding),
 
     encode(instruction: DecodedInstruction): string {
         const encoded = getEncoding(instruction.mnemonic, HANDLER);
@@ -24,7 +24,7 @@ export const memoryHandler = {
     decode(bits32: string, version: MipsVersion): DecodedInstruction {
         const { opcode, imm26 } = sliceBits(bits32);
 
-        const encoded = findEncodingByOpcode(opcode, isJumpEncoding, HANDLER);
+        const encoded = findEncodingByOpcode(opcode, isJTypeEncoding, HANDLER);
 
         return {
             mnemonic: encoded.mnemonic,
