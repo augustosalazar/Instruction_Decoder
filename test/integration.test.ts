@@ -146,6 +146,40 @@ describe('flujo completo assembly → hex → assembly', () => {
         ]);
     });
 
+    it('jump calcula dirección absoluta y encodea', () => {
+        const program = `
+        addiu $t0, $zero, 1
+        j target
+        addiu $t0, $zero, 2
+        target: addiu $t0, $zero, 3
+    `;
+
+        const { instructions, errors } = parseAssembly(program);
+
+        expect(errors).toHaveLength(0);
+        expect(instructions).toHaveLength(4);
+
+        expect(instructions).toEqual([
+            'addiu $t0 $zero 1',
+            'j 1048579',
+            'addiu $t0 $zero 2',
+            'addiu $t0 $zero 3',
+        ]);
+
+        const decoded = parseInstructions(instructions);
+        const hexes = decoded.map(d => encodeInstruction(d, 'r6'));
+
+        expect(hexes[1]).toBe('0x08100003');
+
+        const decodedBack = decodeInstruction(hexes[1], 'r6');
+        expect(decodedBack).toEqual({
+            mnemonic: 'j',
+            operands: [
+                { kind: 'immediate', value: 1048579 }
+            ]
+        });
+    });
+
     it('branch hacia la siguiente instrucción usa offset 0', () => {
         const program = `
         beq $t0, $zero, next
@@ -332,5 +366,76 @@ describe('flujo completo assembly → hex → assembly', () => {
         expect(instructions).toHaveLength(0);
         expect(errors.length).toBeGreaterThan(0);
         expect(errors[0]).toContain('fuera de rango');
+    });
+
+    it('programa complejo recursivo de Fibonacci (MIPS standard)', () => {
+        const program = `
+            # Fibonacci recursivo en MIPS
+            main:   addiu $sp, $sp, -32
+                    sw    $ra, 20($sp)
+                    sw    $fp, 16($sp)
+                    addiu $fp, $sp, 28
+                    addiu $a0, $zero, 5
+                    jal   fib
+                    lw    $fp, 16($sp)
+                    lw    $ra, 20($sp)
+                    addiu $sp, $sp, 32
+                    j     end
+            fib:    addiu $sp, $sp, -16
+                    sw    $ra, 12($sp)
+                    sw    $s0, 8($sp)
+                    addiu $s0, $a0, 0
+                    slti  $t0, $s0, 2
+                    beq   $t0, $zero, recurse
+                    addiu $v0, $s0, 0
+                    j     fib_ret
+            recurse: addiu $a0, $s0, -1
+                    jal   fib
+                    sw    $v0, 4($sp)
+                    addiu $a0, $s0, -2
+                    jal   fib
+                    lw    $t1, 4($sp)
+                    addu  $v0, $v0, $t1
+            fib_ret: lw    $s0, 8($sp)
+                    lw    $ra, 12($sp)
+                    addiu $sp, $sp, 16
+                    jr    $ra
+            end:    syscall
+        `;
+
+        const { instructions, errors } = parseAssembly(program);
+        expect(errors).toHaveLength(0);
+        expect(instructions).toHaveLength(30);
+
+        // jal fib (index 5) -> fib está en index 10 (dirección 0x00400028 -> target = 1048586)
+        expect(instructions[5]).toBe('jal 1048586');
+
+        // j end (index 9) -> end está en index 29 (dirección 0x00400074 -> target = 1048605)
+        expect(instructions[9]).toBe('j 1048605');
+
+        // beq $t0, $zero, recurse (index 15) -> recurse en index 18. Offset = (18 - (15 + 1)) = 2
+        expect(instructions[15]).toBe('beq $t0 $zero 2');
+
+        // j fib_ret (index 17) -> fib_ret en index 25 (dirección 0x00400064 -> target = 1048601)
+        expect(instructions[17]).toBe('j 1048601');
+
+        const decoded = parseInstructions(instructions);
+        const hexes = decoded.map(d => encodeInstruction(d, 'r6'));
+
+        // jr $ra: 0x03E00008
+        expect(hexes[28]).toBe('0x03E00008');
+
+        // syscall: 0x0000000C
+        expect(hexes[29]).toBe('0x0000000C');
+
+        // lw $ra, 12($sp): 0x8FBF000C
+        expect(hexes[26]).toBe('0x8FBF000C');
+
+        // Decodificación y Round-trip completo
+        const back = decoded.map((d, index) => decodeInstruction(hexes[index]!, 'r6'));
+        for (let i = 0; i < decoded.length; i++) {
+            expect(back[i]!.mnemonic).toBe(decoded[i]!.mnemonic);
+            expect(back[i]!.operands.length).toBe(decoded[i]!.operands.length);
+        }
     });
 });
