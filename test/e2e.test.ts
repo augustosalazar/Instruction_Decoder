@@ -1,15 +1,10 @@
-// test/e2e.test.ts
 // Pruebas end-to-end: flujo completo assembly → parse → encode → decode → format
-// Cubre que el pipeline no falle, que la librería funcione y que las instrucciones
-// sean las esperadas en cada etapa.
-
 import { describe, it, expect } from 'vitest';
 import { parseAssembly }          from '../src/services/assembly-parser.service/assembly-parser.service';
 import { parseInstructions }       from '../src/services/instruction.parser.service';
 import { encodeInstruction, decodeInstruction } from '../src/services/handler.registry.service';
 import { formatDecodedInstruction }             from '../src/utils/format.utils';
 
-// ─── Helper: ejecuta el pipeline completo y devuelve cada etapa ──────────────
 
 interface PipelineResult {
     parsedLines  : string[];
@@ -30,8 +25,6 @@ const runPipeline = (program: string, version: 'r6' = 'r6'): PipelineResult => {
 
     return { parsedLines, hexes, decodedBack, formatted, errors };
 };
-
-// ─── 1. FLUJO COMPLETO SIN ERRORES ───────────────────────────────────────────
 
 describe('E2E – el flujo no falla', () => {
 
@@ -68,9 +61,14 @@ describe('E2E – el flujo no falla', () => {
     });
 
     it('una instrucción J-type llega al final sin errores', () => {
-        const { errors, hexes, formatted } = runPipeline('j 1000');
+        const program = `
+            j fin
+            addiu $t0, $zero, 1
+            fin: addiu $t1, $zero, 2
+        `;
+        const { errors, hexes, formatted } = runPipeline(program);
         expect(errors).toHaveLength(0);
-        expect(hexes).toHaveLength(1);
+        expect(hexes).toHaveLength(3);
         expect(formatted[0]).toContain('j');
     });
 
@@ -89,8 +87,6 @@ describe('E2E – el flujo no falla', () => {
     });
 
 });
-
-// ─── 2. LA LIBRERÍA FUNCIONA: INSTRUCCIONES ESPERADAS ────────────────────────
 
 describe('E2E – las instrucciones producen los hexadecimales esperados', () => {
 
@@ -159,8 +155,6 @@ describe('E2E – las instrucciones producen los hexadecimales esperados', () =>
 
 });
 
-// ─── 3. ROUND-TRIP: decode(encode(x)) === x ──────────────────────────────────
-
 describe('E2E – round-trip: la instrucción decodificada coincide con la original', () => {
 
     const roundTrip = (asm: string, expectedMnemonic: string) => {
@@ -205,8 +199,6 @@ describe('E2E – round-trip: la instrucción decodificada coincide con la origi
     });
 
 });
-
-// ─── 4. PROGRAMAS COMPLETOS (escenarios reales) ───────────────────────────────
 
 describe('E2E – programas completos de extremo a extremo', () => {
 
@@ -310,7 +302,7 @@ describe('E2E – programas completos de extremo a extremo', () => {
 
 });
 
-// ─── 5. TIEMPO DE RESPUESTA DEL FLUJO ────────────────────────────────────────
+// ────── TIEMPO DE RESPUESTA DEL FLUJO ────────────────────────────────────────
 // Basado en los resultados de la prueba de performance del equipo:
 // 10500 instrucciones → 146 ms total → ~0.014 ms por instrucción.
 // Estas pruebas validan que el flujo e2e no degrade ese rendimiento.
@@ -377,9 +369,7 @@ describe('E2E – el flujo responde en tiempo razonable', () => {
 
 });
 
-// ─── 6. EL FLUJO DETECTA ERRORES CORRECTAMENTE ───────────────────────────────
-
-describe('E2E – el flujo detecta y reporta errores sin explotar', () => {
+describe('E2E - el flujo detecta y reporta errores sin explotar', () => {
 
     it('instrucción desconocida no llega al encoder', () => {
         const { errors, hexes } = runPipeline('fakeop $t0, $t1, $t2');
