@@ -16,8 +16,8 @@ export const iTypeHandler = {
 
     instructions: buildInstructionDescriptions(isITypeEncoding),
     
-    encode(instruction: DecodedInstruction): string {
-        const encoded = getEncoding(instruction.mnemonic, HANDLER);
+    encode(instruction: DecodedInstruction, version: MipsVersion ): string {
+        const encoded = getEncoding(instruction.mnemonic, HANDLER, version);
         const { mnemonic, operands } = instruction;
 
         if (mnemonic === 'lui') {

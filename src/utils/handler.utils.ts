@@ -1,6 +1,7 @@
-import { ENCODING_BY_MNEMONIC } from "@/constants/instructions.constants";
+import { ENCODING_BY_MNEMONIC, LEGACY_INSTRUCTIONS_ENCODING, R6_INSTRUCTIONS_ENCODING } from "@/constants/instructions.constants";
 import { HandlerError, InstructionDescription } from "@/types/handler.types";
 import { InstructionEncoding } from "@/types/instruction.types";
+import { MipsVersion } from "@/types/version.types";
 
 // Funcion que permite extraer del set general dada una condicion 
 export function buildInstructionDescriptions(predicate: (encoding: InstructionEncoding) => boolean)
@@ -11,9 +12,13 @@ export function buildInstructionDescriptions(predicate: (encoding: InstructionEn
         .map(e => ({ mnemonic: e.mnemonic, opcode: e.opcode }));
 }
 
-export function getEncoding(mnemonic: string, handlerName: string): InstructionEncoding {
-    const encoding = ENCODING_BY_MNEMONIC[mnemonic];
-    
+export function getEncoding(mnemonic: string, handlerName: string, version:MipsVersion): InstructionEncoding {
+    const ENCODINGS = version === 'r6' 
+        ? [...R6_INSTRUCTIONS_ENCODING, ...LEGACY_INSTRUCTIONS_ENCODING]
+        : [...LEGACY_INSTRUCTIONS_ENCODING, ...R6_INSTRUCTIONS_ENCODING];
+
+    const encoding = ENCODINGS.find(e => e.mnemonic.toLowerCase() === mnemonic);
+
     if (!encoding)
         throw new HandlerError({ type: "UNKNOWN_MNEMONIC", message: `[${handlerName}] Encoding no encontrado para ${mnemonic}`});
 

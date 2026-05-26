@@ -32,7 +32,7 @@ export const branchHandler = {
     instructions: buildInstructionDescriptions(isBranchEncoding),
 
     encode(instruction: DecodedInstruction, version: MipsVersion): string {
-        const encoding = getEncoding(instruction.mnemonic, HANDLER);
+        const encoding = getEncoding(instruction.mnemonic, HANDLER, version);
         const rule = findRuleByMnemonic(instruction.mnemonic);
 
         if (!rule) {
