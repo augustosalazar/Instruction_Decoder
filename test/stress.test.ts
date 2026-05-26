@@ -31,9 +31,11 @@ function mockOperand(argName: string): Operand {
 }
 
 describe('MIPS Encoder/Decoder Stress Test (100% de instrucciones)', () => {
-    // Lista de excepciones donde el round-trip de mnemónico difiere por diseño o duplicidad
+    // Lista de excepciones donde el round-trip de mnemónico difiere por diseño
     const MNEMONIC_ALIASES: Record<string, string> = {
-        'aui': 'lui', // aui con rs=00000 se decodifica como lui por diseño
+        // El mock usa rs=t1(9) < rt=t2(10), lo que codifica bits idénticos a beqc/bnec
+        'bovc': 'beqc',
+        'bnvc': 'bnec',
     };
 
     for (const encoding of INSTRUCTION_ENCODINGS) {
