@@ -4,7 +4,7 @@ import { InstructionHandler } from "@/types/handler.types";
 import { DecodedInstruction } from "@/types/instruction.types";
 import { ImmediateOperand, RegisterOperand } from "@/types/operand.types";
 import { MipsVersion } from "@/types/version.types";
-import { constToBits, sliceBits } from "@/utils/bit.utils";
+import { bitsToSignedNum, constToBits, sliceBits } from "@/utils/bit.utils";
 import { buildInstructionDescriptions, findEncodingByOpcode, getEncoding } from "@/utils/handler.utils";
 import { regBitsToName, regNameToBits } from "@/utils/register.utils";
 
@@ -38,7 +38,7 @@ export const iTypeHandler = {
         // Buscar encoding respetando la versión
         const encoded = findEncodingByOpcode(opcode, isITypeEncoding, HANDLER, version);
 
-        // lui (rs=0) y aui (rs≠0) comparten opcode 001111 en R6
+        // lui (rs=0) y aui (rs!=0) comparten opcode 001111 en R6
         const isLuiAuiOpcode = encoded.mnemonic === 'lui' || encoded.mnemonic === 'aui';
         const mnemonic = isLuiAuiOpcode
             ? (rs === REG_ZERO ? 'lui' : 'aui')
@@ -68,7 +68,7 @@ export const iTypeHandler = {
             operands: [
                 { kind: 'register', name: regBitsToName(rt as RegisterBits) },
                 { kind: 'register', name: regBitsToName(rs as RegisterBits) },
-                { kind: 'immediate', value: parseInt(imm16, 2) },
+                { kind: 'immediate', value: bitsToSignedNum(imm16, 16) },
             ],
         };
     },

@@ -60,9 +60,16 @@ export const rTypeHandler = {
     decode(bits32: string, version: MipsVersion): DecodedInstruction {
         const { rs, rt, rd, shamt, funct } = sliceBits(bits32);
 
+        const tryFunct = (v: MipsVersion) =>
+            ENCODING_BY_FUNCT[`${funct}:${shamt}:${v}`] ??
+            ENCODING_BY_FUNCT[`${funct}:*:${v}`];
+
         const encoded =
-            ENCODING_BY_FUNCT[`${funct}:${shamt}:${version}`] ??
-            ENCODING_BY_FUNCT[`${funct}:*:${version}`];
+            tryFunct(version) ??
+            tryFunct('mips1') ??
+            tryFunct('mips2') ??
+            tryFunct('legacy') ??
+            tryFunct('r6');
 
         if ( ! encoded )
             throw new HandlerError({ type:'UNKNOWN_FUNCT', message:`[R-type-handler] funct desconocido ${funct} shamt ${shamt}`})
