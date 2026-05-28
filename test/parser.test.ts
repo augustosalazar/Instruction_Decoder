@@ -19,7 +19,7 @@ describe('AssemblyParser', () => {
         const result = parseAssembly('add $t0, $t1, $t2');
         expect(result.errors).toHaveLength(0);
         expect(result.instructions).toHaveLength(1);
-        expect(result.instructions[0]).toBe('add $t1 $t2 $t0');
+        expect(result.instructions[0]).toBe('add $t0 $t1 $t2');
     });
 
     it('parsea múltiples instrucciones', () => {

@@ -22,6 +22,7 @@ const RAW_ARG_TO_CANONICAL_ARG: Readonly<Record<string, InstructionArg>> = {
     offsetFromBase  : "offsetFromBase",
 
     address         : "imm26",
+    target          : "imm26",
     imm26           : "imm26",
 
     imm21           : "imm21",
